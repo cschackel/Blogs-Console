@@ -11,6 +11,19 @@ namespace BlogsConsole
         public static void Main(string[] args)
         {
             logger.Info("Program started");
+            String menuOption="";
+            do
+            {
+                Console.WriteLine("");
+                try
+                {
+
+                } catch(Exception e)
+                {
+
+                }
+            } while ();
+
             try
             {
 
@@ -39,6 +52,22 @@ namespace BlogsConsole
             }
             Console.WriteLine("");
             logger.Info("Program ended");
+        }
+
+        public static void displayMenu()
+        {
+            Console.WriteLine("1: Display Blogs\n2: Add New Blog\n3: Create Post\n");
+        }
+        public static void getMenuOption()
+        {
+            int menuChoice = 0;
+            String menuChoiceStr;
+            do
+            {
+                displayMenu();
+                menuChoiceStr = Console.ReadLine();
+            } while (!int.TryParse(menuChoiceStr, out menuChoice) || !(menuChoice == 1 || menuChoice == 2 || menuChoice == 3))
+            
         }
         
     }
