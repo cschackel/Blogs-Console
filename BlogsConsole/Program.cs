@@ -29,7 +29,7 @@ namespace BlogsConsole
                         addPost();
                         break;
                     case 4: //Display Posts From Blog
-
+                        displayPosts();
                         break;
                     case 5:  //End Program
                         endProgram = true;
@@ -45,7 +45,7 @@ namespace BlogsConsole
         //Display's Menu
         public static void displayMenu()
         {
-            Console.WriteLine("1: Display Blogs\n2: Add New Blog\n3: Create Post\n");
+            Console.WriteLine("1: Display Blogs\n2: Add New Blog\n3: Create Post\n4: View Posts\n5: Exit");
         }
 
         //Prompts User for the Menu Option
@@ -57,7 +57,7 @@ namespace BlogsConsole
             {
                 displayMenu();
                 String menuChoiceStr = Console.ReadLine();
-                if (int.TryParse(menuChoiceStr, out menuChoice) && (menuChoice == 1 || menuChoice == 2 || menuChoice == 3))
+                if (int.TryParse(menuChoiceStr, out menuChoice) && (menuChoice == 1 || menuChoice == 2 || menuChoice == 3 || menuChoice == 4 || menuChoice == 5))
                 {
                     validMenuChoice = true;
                 }
@@ -81,7 +81,7 @@ namespace BlogsConsole
             do
             {
                 displayBlogs();
-                Console.WriteLine("Post To Blog ID: ");
+                Console.WriteLine("Select Blog ID: ");
                 String blogStr = Console.ReadLine();
                 if (int.TryParse(blogStr, out blogID) && blogIDs.Contains(blogID))
                 {
@@ -167,6 +167,19 @@ namespace BlogsConsole
             {
                 logger.Error("Error Adding Post {message} {stackTrace}",e.Message,e.StackTrace);
             }
+        }
+
+        //Displays Posts From A Given Blog
+        public static void displayPosts()
+        {
+            int blogID = getTargetBlog();
+            //var posts = db.Blogs.Where(r=>r.BlogId==blogID).Select(r=>r.Posts);
+            var posts = db.Posts.Where(r => r.BlogId == blogID);
+            foreach(Post p in posts)
+            {
+                Console.WriteLine(p.Title);
+            }
+
         }
         
     }
