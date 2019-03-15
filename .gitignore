@@ -14,6 +14,7 @@ App.config
 #BlogsConsole/App.config
 #**/App.config
 *.config
+#ON DESKTOP
 
 # Build results
 [Dd]ebug/
@@ -267,4 +268,5 @@ __pycache__/
 BlogsConsole/App.config
 BlogsConsole/App.config
 *.config
+BlogsConsole/App.config
 BlogsConsole/App.config
