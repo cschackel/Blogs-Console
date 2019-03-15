@@ -12,52 +12,43 @@ namespace BlogsConsole
         public static void Main(string[] args)
         {
             logger.Info("Program started");
-            int menuOption = getMenuOption();
-
-            switch(menuOption)
+            bool endProgram = false;  //Flag For End Program
+            do  //Do While Program Is Running
             {
-                case 1:
-                    displayBlogs();
-                    break;
-                case 2:
-                    addBlog();
-                    break;
-            }
+                int menuOption = getMenuOption();  //Gets Menu Option
 
-            try
-            {
-
-                // Create and save a new Blog
-                Console.Write("Enter a name for a new Blog: ");
-                var name = Console.ReadLine();
-
-                var blog = new Blog { Name = name };
-
-                //var db = new BloggingContext();
-                db.AddBlog(blog);
-                logger.Info("Blog added - {name}", name);
-
-                // Display all Blogs from the database
-                var query = db.Blogs.OrderBy(b => b.Name);
-
-                Console.WriteLine("All blogs in the database:");
-                foreach (var item in query)
+                switch (menuOption)
                 {
-                    Console.WriteLine(item.Name);
+                    case 1:  //Display
+                        displayBlogs();
+                        break;
+                    case 2:  //Add Blog
+                        addBlog();
+                        break;
+                    case 3:  //Add Post
+                        addPost();
+                        break;
+                    case 4: //Display Posts From Blog
+
+                        break;
+                    case 5:  //End Program
+                        endProgram = true;
+                        break;
                 }
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex.Message);
-            }
+            } while (!endProgram);
+
             Console.WriteLine("");
             logger.Info("Program ended");
         }
 
+
+        //Display's Menu
         public static void displayMenu()
         {
             Console.WriteLine("1: Display Blogs\n2: Add New Blog\n3: Create Post\n");
         }
+
+        //Prompts User for the Menu Option
         public static int getMenuOption()
         {
             int menuChoice = 0;
@@ -81,6 +72,30 @@ namespace BlogsConsole
             
         }
 
+        //Get's Blog ID of Blog to Target
+        public static int getTargetBlog()
+        {
+            bool validBlogID=false;
+            int blogID=-1;
+            var blogIDs = db.Blogs.Select(r=>r.BlogId);
+            do
+            {
+                displayBlogs();
+                Console.WriteLine("Post To Blog ID: ");
+                String blogStr = Console.ReadLine();
+                if (int.TryParse(blogStr, out blogID) && blogIDs.Contains(blogID))
+                {
+                    validBlogID = true;
+                }
+                else
+                {
+                    Console.WriteLine("Invalid Blog ID\n");
+                }
+            } while (!validBlogID);
+            return blogID;
+        }
+
+        //Displays All Blogs
         public static void displayBlogs()
         {
             try
@@ -90,7 +105,7 @@ namespace BlogsConsole
                 Console.WriteLine("All blogs in the database:");
                 foreach (var item in query)
                 {
-                    Console.WriteLine(item.Name);
+                    Console.WriteLine($"ID: {item.BlogId} -- Name: {item.Name}");
                 }
             } catch(Exception e)
             {
@@ -98,6 +113,7 @@ namespace BlogsConsole
             }
         }
 
+        //Adds a New Blog
         public static void addBlog()
         {
             try
@@ -123,12 +139,33 @@ namespace BlogsConsole
 
                 var blog = new Blog { Name = name };
 
-                //var db = new BloggingContext();
                 db.AddBlog(blog);
                 logger.Info("Blog added - {name}", name);
             } catch(Exception e)
             {
                 logger.Error("Error Adding Blog: {e.Message} {e.StackTrace}",e.Message,e.StackTrace);
+            }
+        }
+
+        //Adds Post To Posts Table
+        public static void addPost()
+        {
+
+            try
+            {
+                Post newPost = new Post { BlogId = getTargetBlog() };
+                Console.WriteLine("Post Title: ");
+                newPost.Title = Console.ReadLine();
+                Console.WriteLine("Post Content: ");
+                newPost.Content = Console.ReadLine();
+
+                db.AddPost(newPost);
+
+                logger.Info("Post Added to Blog ID {BlogID}: Post ID: {PostID}",newPost.BlogId,newPost.PostId);
+            }
+            catch(Exception e)
+            {
+                logger.Error("Error Adding Post {message} {stackTrace}",e.Message,e.StackTrace);
             }
         }
         
