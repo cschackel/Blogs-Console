@@ -9,6 +9,11 @@
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
+#CLS
+App.config
+#BlogsConsole/App.config
+#**/App.config
+*.config
 
 # Build results
 [Dd]ebug/
@@ -259,3 +264,6 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+BlogsConsole/App.config
+BlogsConsole/App.config
+*.config
