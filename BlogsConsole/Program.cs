@@ -98,20 +98,30 @@ namespace BlogsConsole
         //Displays All Blogs
         public static void displayBlogs()
         {
-            try
+            if (db.Blogs.Count() == 0)
             {
-                var query = db.Blogs.OrderBy(b => b.BlogId);
-
-                Console.WriteLine("All blogs in the database:");
-                foreach (var item in query)
+                //logger.Warn("Cannot Display if no blogs are present.");
+                Console.WriteLine("\nNo Blogs To Display\n");
+            }
+            else
+            {
+                try
                 {
-                    Console.WriteLine($"ID: {item.BlogId} -- Name: {item.Name}");
+                    var query = db.Blogs.OrderBy(b => b.BlogId);
+
+                    Console.WriteLine($"Blogs Returned: {query.Count()}");
+                    //Console.WriteLine("\nAll blogs in the database:");
+                    foreach (var item in query)
+                    {
+                        Console.WriteLine($"\nID: {item.BlogId} -- Name: {item.Name}\n");
+                    }
+                }
+                catch (Exception e)
+                {
+                    logger.Error("Error Displaying Blogs: " + e.Message + " " + e.StackTrace);
                 }
             }
-            catch (Exception e)
-            {
-                logger.Error("Error Displaying Blogs: " + e.Message + " " + e.StackTrace);
-            }
+            
         }
 
         //Adds a New Blog
@@ -123,7 +133,7 @@ namespace BlogsConsole
                 String name = "";
                 do
                 {
-                    Console.Write("Enter a name for a new Blog: ");
+                    Console.Write("\nEnter a name for a new Blog: ");
                     name = Console.ReadLine();
 
                     var currentBlogNames = db.Blogs.Select(n => n.Name);
@@ -131,6 +141,10 @@ namespace BlogsConsole
                     if (!currentBlogNames.Contains(name) && !name.Equals(""))
                     {
                         validBlogName = true;
+                    }
+                    else if(name.Equals(""))
+                    {
+                        Console.WriteLine("Blog Name Cannot Be Blank\n");
                     }
                     else
                     {
@@ -152,57 +166,105 @@ namespace BlogsConsole
         //Adds Post To Posts Table
         public static void addPost()
         {
-
-            try
+            if(db.Blogs.Count()==0)
             {
-                Post newPost = new Post { BlogId = getTargetBlog() };
-                String tempTitle = "";
-                do
-                {
-                    Console.WriteLine("Post Title: ");
-                    tempTitle = Console.ReadLine();
-                    if (tempTitle.Equals(""))
-                    {
-                        Console.WriteLine("Cannot Leave Title Blank");
-                    }
-                } while (tempTitle.Equals(""));
-                newPost.Title = tempTitle;
-
-                Console.WriteLine("Post Content: ");
-                newPost.Content = Console.ReadLine();
-
-                db.AddPost(newPost);
-
-                logger.Info("Post Added to Blog ID {BlogID}: Post ID: {PostID}", newPost.BlogId, newPost.PostId);
+                logger.Warn("Cannot add posts if no blogs are present.");
+                Console.WriteLine("\nNo Blogs To Post To\n");
             }
-            catch (Exception e)
+            else
             {
-                logger.Error("Error Adding Post {message} {stackTrace}", e.Message, e.StackTrace);
+                try
+                {
+                    Post newPost = new Post { BlogId = getTargetBlog() };
+                    String tempTitle = "";
+                    do
+                    {
+                        Console.WriteLine("\nPost Title: ");
+                        tempTitle = Console.ReadLine();
+                        if (tempTitle.Equals(""))
+                        {
+                            Console.WriteLine("Cannot Leave Title Blank");
+                        }
+                    } while (tempTitle.Equals(""));
+                    newPost.Title = tempTitle;
+
+                    Console.WriteLine("Post Content: ");
+                    newPost.Content = Console.ReadLine();
+
+                    db.AddPost(newPost);
+
+                    logger.Info("Post Added to Blog ID {BlogID}: Post ID: {PostID}", newPost.BlogId, newPost.PostId);
+                }
+                catch (Exception e)
+                {
+                    logger.Error("Error Adding Post {message} {stackTrace}", e.Message, e.StackTrace);
+                }
             }
         }
 
         //Displays Posts From A Given Blog
         public static void displayPosts()
         {
-            int blogID = getTargetBlog();
-            //var posts = db.Blogs.Where(r=>r.BlogId==blogID).Select(r=>r.Posts);
-            var posts = db.Posts.Where(r => r.BlogId == blogID);
-            Console.WriteLine($"{posts.Count()} Posts Returned");
-            foreach (Post p in posts)
+            if (db.Blogs.Count() == 0)
             {
-                Console.WriteLine($"Title:\n{ p.Title}\nContent:\n{ p.Content}");
+                logger.Warn("Cannot view posts if no blogs are present.");
+                Console.WriteLine("\nNo Blogs To Gather Posts From\n");
+            }
+            else
+            {
+                int menuChoice = 0;
+                bool validMenuChoice = false;
+                do
+                {
+                    Console.WriteLine("\n1: Display All Posts\n2: Display Posts From Blog\n");
+                    String menuChoiceStr = Console.ReadLine();
+                    if (int.TryParse(menuChoiceStr, out menuChoice) && (menuChoice == 1 || menuChoice == 2))
+                    {
+                        validMenuChoice = true;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid Menu Input\n\n");
+                    }
+                } while (!validMenuChoice);
+                switch (menuChoice)
+                {
+                    case 1:
+                        displayAllPosts();
+                        break;
+                    case 2:
+                        displayPostsFromBlog();
+                        break;
+                    default:
+                        logger.Error("Unexpected Switch Property in Display Posts");
+                        break;
+                }
             }
 
         }
 
+        //Displays Posts From All Blogs
         public static void displayAllPosts()
         {
             Console.WriteLine("All Posts:");
             var posts = db.Posts;
-            Console.WriteLine($"{posts.Count()} Posts Returned");
+            Console.WriteLine($"\n{posts.Count()} Posts Returned\n");
             foreach (Post p in posts)
             {
-                Console.WriteLine($"Blog:\n{p.Blog.Name}\nTitle:\n{p.Title}\nContent:\n{p.Content}");
+                Console.WriteLine($"\nBlog:\n{p.Blog.Name}\nTitle:\n{p.Title}\nContent:\n{p.Content}\n");
+            }
+        }
+
+        //Displays Posts From A Single Blog
+        public static void displayPostsFromBlog()
+        {
+            int blogID = getTargetBlog();
+            //var posts = db.Blogs.Where(r=>r.BlogId==blogID).Select(r=>r.Posts);
+            var posts = db.Posts.Where(r => r.BlogId == blogID);
+            Console.WriteLine($"\n{posts.Count()} Posts Returned\n");
+            foreach (Post p in posts)
+            {
+                Console.WriteLine($"\nTitle:\n{ p.Title}\nContent:\n{ p.Content}\n");
             }
         }
 
