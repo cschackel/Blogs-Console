@@ -52,7 +52,7 @@ namespace BlogsConsole
         public static int getMenuOption()
         {
             int menuChoice = 0;
-            bool validMenuChoice=false;
+            bool validMenuChoice = false;
             do
             {
                 displayMenu();
@@ -67,17 +67,17 @@ namespace BlogsConsole
                 }
             } while (!validMenuChoice);
 
-            logger.Info("Menu Choice: {menuChoice}",menuChoice);
+            logger.Info("Menu Choice: {menuChoice}", menuChoice);
             return menuChoice;
-            
+
         }
 
         //Get's Blog ID of Blog to Target
         public static int getTargetBlog()
         {
-            bool validBlogID=false;
-            int blogID=-1;
-            var blogIDs = db.Blogs.Select(r=>r.BlogId);
+            bool validBlogID = false;
+            int blogID = -1;
+            var blogIDs = db.Blogs.Select(r => r.BlogId);
             do
             {
                 displayBlogs();
@@ -100,14 +100,15 @@ namespace BlogsConsole
         {
             try
             {
-                var query = db.Blogs.OrderBy(b => b.Name);
+                var query = db.Blogs.OrderBy(b => b.BlogId);
 
                 Console.WriteLine("All blogs in the database:");
                 foreach (var item in query)
                 {
                     Console.WriteLine($"ID: {item.BlogId} -- Name: {item.Name}");
                 }
-            } catch(Exception e)
+            }
+            catch (Exception e)
             {
                 logger.Error("Error Displaying Blogs: " + e.Message + " " + e.StackTrace);
             }
@@ -127,7 +128,7 @@ namespace BlogsConsole
 
                     var currentBlogNames = db.Blogs.Select(n => n.Name);
 
-                    if(!currentBlogNames.Contains(name))
+                    if (!currentBlogNames.Contains(name) && !name.Equals(""))
                     {
                         validBlogName = true;
                     }
@@ -141,9 +142,10 @@ namespace BlogsConsole
 
                 db.AddBlog(blog);
                 logger.Info("Blog added - {name}", name);
-            } catch(Exception e)
+            }
+            catch (Exception e)
             {
-                logger.Error("Error Adding Blog: {e.Message} {e.StackTrace}",e.Message,e.StackTrace);
+                logger.Error("Error Adding Blog: {e.Message} {e.StackTrace}", e.Message, e.StackTrace);
             }
         }
 
@@ -154,18 +156,28 @@ namespace BlogsConsole
             try
             {
                 Post newPost = new Post { BlogId = getTargetBlog() };
-                Console.WriteLine("Post Title: ");
-                newPost.Title = Console.ReadLine();
+                String tempTitle = "";
+                do
+                {
+                    Console.WriteLine("Post Title: ");
+                    tempTitle = Console.ReadLine();
+                    if (tempTitle.Equals(""))
+                    {
+                        Console.WriteLine("Cannot Leave Title Blank");
+                    }
+                } while (tempTitle.Equals(""));
+                newPost.Title = tempTitle;
+
                 Console.WriteLine("Post Content: ");
                 newPost.Content = Console.ReadLine();
 
                 db.AddPost(newPost);
 
-                logger.Info("Post Added to Blog ID {BlogID}: Post ID: {PostID}",newPost.BlogId,newPost.PostId);
+                logger.Info("Post Added to Blog ID {BlogID}: Post ID: {PostID}", newPost.BlogId, newPost.PostId);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                logger.Error("Error Adding Post {message} {stackTrace}",e.Message,e.StackTrace);
+                logger.Error("Error Adding Post {message} {stackTrace}", e.Message, e.StackTrace);
             }
         }
 
@@ -175,12 +187,24 @@ namespace BlogsConsole
             int blogID = getTargetBlog();
             //var posts = db.Blogs.Where(r=>r.BlogId==blogID).Select(r=>r.Posts);
             var posts = db.Posts.Where(r => r.BlogId == blogID);
-            foreach(Post p in posts)
+            Console.WriteLine($"{posts.Count()} Posts Returned");
+            foreach (Post p in posts)
             {
-                Console.WriteLine(p.Title);
+                Console.WriteLine($"Title:\n{ p.Title}\nContent:\n{ p.Content}");
             }
 
         }
-        
+
+        public static void displayAllPosts()
+        {
+            Console.WriteLine("All Posts:");
+            var posts = db.Posts;
+            Console.WriteLine($"{posts.Count()} Posts Returned");
+            foreach (Post p in posts)
+            {
+                Console.WriteLine($"Blog:\n{p.Blog.Name}\nTitle:\n{p.Title}\nContent:\n{p.Content}");
+            }
+        }
+
     }
 }
